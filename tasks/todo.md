@@ -34,6 +34,13 @@
 - [ ] Task 7: Weekly review view
 - [x] Task 8: Data export, reset (settings UI stretch)
 
+## Shipping + Launch ✅
+- [x] Pre-launch checklist completed
+- [x] Feature flag for "Add Habit" (ENABLE_ADD_HABIT)
+- [x] Deploy plan to GitHub Pages (with CI workflow)
+- [x] Rollback plan documented
+- [x] Post-deploy checklist ready
+
 ## Security + Quality Review ✅
 - [x] Five-axis code review (correctness, readability, architecture, security, performance)
 - [x] Security hardening: XSS defense (textContent, input validation)
