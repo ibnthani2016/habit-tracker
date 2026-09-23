@@ -21,7 +21,7 @@
 - [ ] Weekly habit can be completed once per week only
 
 ## Phase 3: Streak Engine + Dashboard
-- [ ] Task 5: Streak computation engine
+- [x] Task 5: Streak computation engine
 - [ ] Task 6: Dashboard with stats and status indicators
 
 ## Checkpoint: Streak + Dashboard

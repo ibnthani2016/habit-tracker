@@ -143,7 +143,7 @@ A local-first, browser-based habit tracker for three productivity habits (2 dail
 
 ### Phase 3: Streak Engine + Dashboard
 
-## Task 5: Streak computation engine
+## Task 5: Streak computation engine ✅ (committed as `3bd9521`)
 
 **Description:** Build a pure function `calculateStreak(habit, completions[])` that returns `{ currentStreak, bestStreak, status }`. For daily habits, walk backwards day-by-day from today. For weekly habits, walk backwards week-by-week from current week. Broken status when a gap is found. Best streak is the max consecutive run in history.
 
