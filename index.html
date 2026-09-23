@@ -24,6 +24,36 @@
         </ul>
       </section>
 
+      <!-- Add Habit Form — hidden unless feature flag enabled -->
+      <section id="add-habit-section" class="add-habit-section" aria-labelledby="add-habit-heading" hidden>
+        <h2 id="add-habit-heading" class="section-heading">Add a Habit</h2>
+        <form id="add-habit-form" class="add-habit-form" novalidate>
+          <div class="form-field">
+            <label for="habit-name">Name</label>
+            <input
+              id="habit-name"
+              type="text"
+              name="name"
+              maxlength="100"
+              required
+              placeholder="e.g., Read for 30 minutes"
+              aria-describedby="habit-name-help"
+            />
+            <span id="habit-name-help" class="field-help">Up to 100 characters</span>
+          </div>
+
+          <div class="form-field">
+            <label for="habit-frequency">Frequency</label>
+            <select id="habit-frequency" name="frequency" required>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Add Habit</button>
+        </form>
+      </section>
+
       <section class="stats-section" aria-labelledby="stats-heading">
         <h2 id="stats-heading">Stats</h2>
         <dl class="stats-grid" id="stats-display">

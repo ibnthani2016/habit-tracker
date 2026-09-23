@@ -5,7 +5,7 @@
  * Accessibility: targeted updates preserve focus, ARIA live announces changes.
  */
 
-import { load, saveCompletion, removeCompletion, getCompletionForPeriod, clearAll, exportData } from './storage.js';
+import { load, saveHabit, saveCompletion, removeCompletion, getCompletionForPeriod, clearAll, exportData } from './storage.js';
 import { calculateStreak } from './streaks.js';
 import { startOfDay, endOfDay, startOfWeek, endOfWeek } from './utils/date.js';
 
@@ -16,6 +16,8 @@ const STATS_DISPLAY_ID = 'stats-display';
 const STATUS_LIVE_ID = 'status-live';
 const EXPORT_BTN_ID = 'export-btn';
 const RESET_BTN_ID = 'reset-btn';
+const ADD_HABIT_SECTION_ID = 'add-habit-section';
+const ADD_HABIT_FORM_ID = 'add-habit-form';
 
 // ── Helpers ────────────────────────────────────────────────
 
@@ -279,6 +281,47 @@ function init() {
 
   document.getElementById(EXPORT_BTN_ID)?.addEventListener('click', handleExport);
   document.getElementById(RESET_BTN_ID)?.addEventListener('click', handleReset);
+
+  initAddHabitForm();
+}
+
+// ── Feature Flag: Add Habit ──────────────────────────────
+
+async function initAddHabitForm() {
+  const { isFeatureEnabled } = await import('./features.js');
+
+  if (!isFeatureEnabled('ENABLE_ADD_HABIT')) {
+    return; // Feature disabled — form stays hidden
+  }
+
+  const section = document.getElementById(ADD_HABIT_SECTION_ID);
+  const form = document.getElementById(ADD_HABIT_FORM_ID);
+  if (!section || !form) return;
+
+  section.hidden = false;
+
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(form);
+    const name = String(formData.get('name') || '').trim();
+    const frequency = String(formData.get('frequency') || 'daily');
+
+    if (!name) {
+      announce('Please enter a habit name.');
+      form.querySelector('#habit-name')?.focus();
+      return;
+    }
+
+    try {
+      saveHabit({ name, frequency, deadlineDay: null });
+      announce(`Habit "${name}" added.`);
+      form.reset();
+      render();
+    } catch (err) {
+      announce(err.message || 'Failed to add habit.');
+    }
+  });
 }
 
 if (document.readyState === 'loading') {

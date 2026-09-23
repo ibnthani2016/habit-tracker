@@ -319,6 +319,76 @@ body {
   background: #fee2e2;
 }
 
+/* ── Add Habit Form ─────────────────────────────────────── */
+
+.add-habit-section {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.add-habit-section[hidden] {
+  display: none;
+}
+
+.section-heading {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #1a1a2e;
+}
+
+.add-habit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.form-field label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.form-field input,
+.form-field select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+  min-height: 44px;
+  background: #ffffff;
+  color: #1a1a2e;
+}
+
+.form-field input:focus,
+.form-field select:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-color: #3b82f6;
+}
+
+.field-help {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.btn-primary {
+  background: #3b82f6;
+  color: #ffffff;
+  border-color: #3b82f6;
+}
+
+.btn-primary:hover {
+  background: #2563eb;
+}
+
 /* ── Empty State ────────────────────────────────────────── */
 
 .empty-state {
