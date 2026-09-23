@@ -2,5 +2,8 @@
   "name": "habit-tracker",
   "version": "1.0.0",
   "type": "module",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "playwright": "^1.63.0"
+  }
 }
