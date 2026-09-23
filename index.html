@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Habit Tracker</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <h1>Habit Tracker</h1>
+      <p class="app-subtitle">Productivity focus. All data stays on this device.</p>
+    </header>
+
+    <main>
+      <!-- Status announcements for screen readers -->
+      <div id="status-live" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
+
+      <section class="habits-section" aria-labelledby="habits-heading">
+        <h2 id="habits-heading" class="visually-hidden">Your Habits</h2>
+        <ul id="habit-list" class="habit-list" role="list">
+          <!-- Habits rendered here -->
+        </ul>
+      </section>
+
+      <section class="stats-section" aria-labelledby="stats-heading">
+        <h2 id="stats-heading">Stats</h2>
+        <dl class="stats-grid" id="stats-display">
+          <!-- Stats rendered here -->
+        </dl>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <button
+        id="export-btn"
+        type="button"
+        class="btn btn-secondary"
+        aria-label="Export all habit data as a JSON file"
+      >
+        Export Data
+      </button>
+      <button
+        id="reset-btn"
+        type="button"
+        class="btn btn-danger"
+        aria-label="Delete all habit data and reset to defaults"
+      >
+        Reset All Data
+      </button>
+    </footer>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
