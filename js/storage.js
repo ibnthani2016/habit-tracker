@@ -18,6 +18,58 @@ function generateId() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
+// ── Validation helpers ─────────────────────────────────────
+
+const MAX_NAME_LENGTH = 100;
+const MAX_COMPLETIONS = 5000;
+
+function stripControlChars(str) {
+  // Remove control characters except tab, newline, carriage return
+  return str.replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, '');
+}
+
+function isValidHabit(h) {
+  if (!h || typeof h !== 'object') return false;
+  if (typeof h.id !== 'string' || h.id.length === 0) return false;
+  if (typeof h.name !== 'string' || h.name.length === 0) return false;
+  if (h.name.length > MAX_NAME_LENGTH) return false;
+  if (h.frequency !== 'daily' && h.frequency !== 'weekly') return false;
+  if (h.deadlineDay !== null && (typeof h.deadlineDay !== 'number' || h.deadlineDay < 0 || h.deadlineDay > 6)) {
+    return false;
+  }
+  return true;
+}
+
+function isValidCompletion(c) {
+  if (!c || typeof c !== 'object') return false;
+  if (typeof c.id !== 'string' || c.id.length === 0) return false;
+  if (typeof c.habitId !== 'string' || c.habitId.length === 0) return false;
+  if (typeof c.periodStart !== 'string') return false;
+  if (typeof c.periodEnd !== 'string') return false;
+  if (typeof c.completedAt !== 'string') return false;
+  return true;
+}
+
+function sanitizeHabit(h) {
+  return {
+    id: String(h.id || generateId()),
+    name: stripControlChars(String(h.name).slice(0, MAX_NAME_LENGTH)),
+    frequency: h.frequency === 'weekly' ? 'weekly' : 'daily',
+    deadlineDay: h.deadlineDay === null ? null : Math.max(0, Math.min(6, Number(h.deadlineDay) || 0)),
+    createdAt: typeof h.createdAt === 'string' ? h.createdAt : new Date().toISOString(),
+  };
+}
+
+function sanitizeCompletion(c) {
+  return {
+    id: String(c.id || generateId()),
+    habitId: String(c.habitId),
+    periodStart: String(c.periodStart),
+    periodEnd: String(c.periodEnd),
+    completedAt: String(c.completedAt),
+  };
+}
+
 function persist(data) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -81,10 +133,33 @@ export function load() {
     return defaults;
   }
 
+  const rawHabits = Array.isArray(parsed.habits) ? parsed.habits : [];
+  const rawCompletions = Array.isArray(parsed.completions) ? parsed.completions : [];
+
+  const habits = rawHabits.filter(isValidHabit).map(sanitizeHabit);
+  const completions = rawCompletions.filter(isValidCompletion).map(sanitizeCompletion);
+
+  // Cap completions to prevent unbounded growth
+  const trimmedCompletions = completions.length > MAX_COMPLETIONS
+    ? completions.slice(-MAX_COMPLETIONS)
+    : completions;
+
+  // If all habits were invalid, reset to defaults
+  if (habits.length === 0) {
+    console.warn('No valid habits found in stored data. Resetting to defaults.');
+    const defaults = {
+      version: CURRENT_VERSION,
+      habits: [...DEFAULT_HABITS],
+      completions: trimmedCompletions,
+    };
+    persist(defaults);
+    return defaults;
+  }
+
   return {
     version: parsed.version,
-    habits: Array.isArray(parsed.habits) ? parsed.habits : [],
-    completions: Array.isArray(parsed.completions) ? parsed.completions : [],
+    habits,
+    completions: trimmedCompletions,
   };
 }
 
@@ -92,14 +167,20 @@ export function load() {
  * Save a new habit. Assigns id and createdAt if missing.
  */
 export function saveHabit(habit) {
-  const data = load();
-  const newHabit = {
+  const candidate = {
     id: habit.id || generateId(),
-    name: habit.name,
+    name: stripControlChars(String(habit.name).slice(0, MAX_NAME_LENGTH)),
     frequency: habit.frequency,
     deadlineDay: habit.deadlineDay ?? null,
     createdAt: habit.createdAt || new Date().toISOString(),
   };
+
+  if (!isValidHabit(candidate)) {
+    throw new Error(`Invalid habit: name must be 1-${MAX_NAME_LENGTH} chars, frequency must be daily or weekly`);
+  }
+
+  const data = load();
+  const newHabit = sanitizeHabit(candidate);
   data.habits.push(newHabit);
   persist(data);
   return newHabit;
@@ -121,14 +202,20 @@ export function removeHabit(id) {
  * Save a completion. Replaces existing completion for same habit+period.
  */
 export function saveCompletion(completion) {
-  const data = load();
-  const newCompletion = {
+  const candidate = {
     id: completion.id || generateId(),
     habitId: completion.habitId,
     completedAt: completion.completedAt,
     periodStart: completion.periodStart,
     periodEnd: completion.periodEnd,
   };
+
+  if (!isValidCompletion(candidate)) {
+    throw new Error('Invalid completion: all fields required');
+  }
+
+  const data = load();
+  const newCompletion = sanitizeCompletion(candidate);
 
   // Deduplicate: replace same habit+period
   const existingIndex = data.completions.findIndex(

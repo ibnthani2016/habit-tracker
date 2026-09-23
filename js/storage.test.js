@@ -247,3 +247,116 @@ describe('exportData', () => {
     assert.ok(Array.isArray(parsed.completions));
   });
 });
+
+// ── Validation / Security ──────────────────────────────
+
+describe('security hardening', () => {
+  it('filters out invalid habits from corrupted localStorage', () => {
+    const stored = {
+      version: 1,
+      habits: [
+        { id: 'good', name: 'Good Habit', frequency: 'daily', deadlineDay: null, createdAt: '2025-01-01' },
+        { id: '', name: 'Missing id', frequency: 'daily' }, // invalid: empty id
+        { name: 'Missing frequency', frequency: 'unknown' }, // invalid: bad frequency
+        { id: 'x', name: '', frequency: 'daily' }, // invalid: empty name
+        { id: 'x', name: 'a'.repeat(200), frequency: 'daily' }, // invalid: too long
+      ],
+      completions: [],
+    };
+    store.set('habit-tracker:data', JSON.stringify(stored));
+
+    const data = load();
+    assert.strictEqual(data.habits.length, 1, 'only valid habit should remain');
+    assert.strictEqual(data.habits[0].name, 'Good Habit');
+  });
+
+  it('strips control characters from habit names', () => {
+    load();
+    const habit = saveHabit({
+      name: 'Test\x00\x01\x02\x03Habit',
+      frequency: 'daily',
+    });
+
+    assert.strictEqual(habit.name, 'TestHabit', 'control chars should be removed');
+  });
+
+  it('caps name length at 100 characters', () => {
+    load();
+    const longName = 'a'.repeat(200);
+    const habit = saveHabit({ name: longName, frequency: 'daily' });
+
+    assert.strictEqual(habit.name.length, 100);
+  });
+
+  it('rejects XSS payloads in habit names safely', () => {
+    load();
+    const habit = saveHabit({
+      name: '<img src=x onerror=alert(1)>',
+      frequency: 'daily',
+    });
+
+    // Should be stored as literal text (no sanitization of < > needed for storage,
+    // but DOM uses textContent so it's safe)
+    assert.strictEqual(habit.name, '<img src=x onerror=alert(1)>');
+  });
+
+  it('filters out invalid completions', () => {
+    const stored = {
+      version: 1,
+      habits: [{ id: 'h-1', name: 'Test', frequency: 'daily', deadlineDay: null, createdAt: '2025-01-01' }],
+      completions: [
+        { id: 'c1', habitId: 'h-1', periodStart: '2025-01-01', periodEnd: '2025-01-01', completedAt: '2025-01-01' },
+        { id: '', habitId: 'h-1' }, // invalid: missing fields
+        { id: 'c3', habitId: 'h-1', periodStart: '2025-01-02', periodEnd: '2025-01-02', completedAt: '2025-01-02' },
+      ],
+    };
+    store.set('habit-tracker:data', JSON.stringify(stored));
+
+    const data = load();
+    assert.strictEqual(data.completions.length, 2, 'only valid completions should remain');
+  });
+
+  it('resets to defaults when ALL habits are invalid', () => {
+    const stored = {
+      version: 1,
+      habits: [
+        { name: 'Bad', frequency: 'unknown' }, // invalid frequency
+      ],
+      completions: [],
+    };
+    store.set('habit-tracker:data', JSON.stringify(stored));
+
+    const data = load();
+    assert.strictEqual(data.habits.length, 3, 'should reset to defaults');
+    assert.strictEqual(data.habits[0].name, 'Improve knowledge base');
+  });
+
+  it('throws on saveHabit with invalid data', () => {
+    load();
+    assert.throws(() => saveHabit({ name: '', frequency: 'daily' }), /Invalid habit/);
+    assert.throws(() => saveHabit({ name: 'Test', frequency: 'unknown' }), /Invalid habit/);
+  });
+
+  it('throws on saveCompletion with invalid data', () => {
+    load();
+    assert.throws(() => saveCompletion({ habitId: 'x' }), /Invalid completion/);
+  });
+
+  it('caps completions array to MAX_COMPLETIONS', () => {
+    const habits = [{ id: 'h-1', name: 'Test', frequency: 'daily', deadlineDay: null, createdAt: '2025-01-01' }];
+    const completions = [];
+    for (let i = 0; i < 5010; i++) {
+      completions.push({
+        id: `c-${i}`,
+        habitId: 'h-1',
+        periodStart: `2025-01-${(i % 30) + 1}T00:00:00`,
+        periodEnd: `2025-01-${(i % 30) + 1}T23:59:59`,
+        completedAt: `2025-01-${(i % 30) + 1}T12:00:00`,
+      });
+    }
+    store.set('habit-tracker:data', JSON.stringify({ version: 1, habits, completions }));
+
+    const data = load();
+    assert.strictEqual(data.completions.length, 5000, 'completions should be capped');
+  });
+});

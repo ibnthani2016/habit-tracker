@@ -19,16 +19,12 @@ const RESET_BTN_ID = 'reset-btn';
 
 // ── Helpers ────────────────────────────────────────────────
 
-function now() {
-  return new Date();
-}
-
-function getHabitState(habit, allCompletions) {
-  const streak = calculateStreak(habit, allCompletions, now());
+function getHabitState(habit, allCompletions, referenceDate) {
+  const streak = calculateStreak(habit, allCompletions, referenceDate);
   const isDaily = habit.frequency === 'daily';
   const currentPeriodStart = isDaily
-    ? startOfDay(now()).toISOString()
-    : startOfWeek(now()).toISOString();
+    ? startOfDay(referenceDate).toISOString()
+    : startOfWeek(referenceDate).toISOString();
   const isDone = !!getCompletionForPeriod(habit.id, currentPeriodStart);
 
   return {
@@ -41,9 +37,9 @@ function getHabitState(habit, allCompletions) {
   };
 }
 
-function getAllState() {
+function getAllState(referenceDate) {
   const { habits, completions } = load();
-  const habitsWithStreaks = habits.map(h => getHabitState(h, completions));
+  const habitsWithStreaks = habits.map(h => getHabitState(h, completions, referenceDate));
   const overallBest = habitsWithStreaks.length > 0
     ? Math.max(0, ...habitsWithStreaks.map(h => h.bestStreak))
     : 0;
@@ -54,7 +50,8 @@ function getAllState() {
 // ── Render (initial build) ─────────────────────────────────
 
 function render() {
-  const { habits, overallBest, activeCount } = getAllState();
+  const ref = new Date();
+  const { habits, overallBest, activeCount } = getAllState(ref);
   const listEl = document.getElementById(HABIT_LIST_ID);
   const statsEl = document.getElementById(STATS_DISPLAY_ID);
 
@@ -166,28 +163,30 @@ function createStatItem(id, value, label) {
 // ── Targeted Update (preserves focus) ──────────────────────
 
 function updateCard(card, habit) {
-  // Update card status class
   card.className = `habit-card habit-card--${habit.status}`;
 
-  // Update checkbox
   const checkbox = card.querySelector('input[type="checkbox"]');
-  checkbox.checked = habit.isDone;
-  checkbox.setAttribute('aria-label', `${habit.isDone ? 'Unmark' : 'Mark'} ${habit.name} as ${habit.frequency === 'daily' ? 'done today' : 'done this week'}`);
+  if (checkbox) {
+    checkbox.checked = habit.isDone;
+    checkbox.setAttribute('aria-label', `${habit.isDone ? 'Unmark' : 'Mark'} ${habit.name} as ${habit.frequency === 'daily' ? 'done today' : 'done this week'}`);
+  }
 
-  // Update meta
   const meta = card.querySelector('.habit-meta');
-  meta.textContent = `${habit.frequency}${habit.status === 'broken' ? ' • streak broken' : ''}`;
+  if (meta) {
+    meta.textContent = `${habit.frequency}${habit.status === 'broken' ? ' • streak broken' : ''}`;
+  }
 
-  // Update badge
   const badge = card.querySelector('.streak-badge');
-  badge.className = `streak-badge streak-badge--${habit.status}`;
-  badge.setAttribute('aria-label', `Current streak: ${habit.currentStreak}. Best streak: ${habit.bestStreak}.`);
+  if (badge) {
+    badge.className = `streak-badge streak-badge--${habit.status}`;
+    badge.setAttribute('aria-label', `Current streak: ${habit.currentStreak}. Best streak: ${habit.bestStreak}.`);
 
-  const icon = badge.querySelector('.streak-icon');
-  icon.textContent = habit.status === 'active' ? '🔥' : '💔';
+    const icon = badge.querySelector('.streak-icon');
+    if (icon) icon.textContent = habit.status === 'active' ? '🔥' : '💔';
 
-  const count = badge.querySelector('.streak-count');
-  count.textContent = habit.currentStreak;
+    const count = badge.querySelector('.streak-count');
+    if (count) count.textContent = habit.currentStreak;
+  }
 }
 
 function updateStats({ overallBest, activeCount }) {
@@ -200,7 +199,7 @@ function updateStats({ overallBest, activeCount }) {
 // ── Actions ────────────────────────────────────────────────
 
 function handleToggle(habit, isChecked, card) {
-  const n = now();
+  const ref = new Date();
 
   if (isChecked) {
     const periodStart = habit.currentPeriodStart;
@@ -210,7 +209,7 @@ function handleToggle(habit, isChecked, card) {
 
     saveCompletion({
       habitId: habit.id,
-      completedAt: n.toISOString(),
+      completedAt: ref.toISOString(),
       periodStart,
       periodEnd,
     });
@@ -220,13 +219,21 @@ function handleToggle(habit, isChecked, card) {
     announce(`${habit.name} unmarked.`);
   }
 
-  // Recompute just this habit's state
-  const { rawCompletions } = getAllState();
-  const freshHabit = load().habits.find(h => h.id === habit.id);
-  const updated = getHabitState(freshHabit, rawCompletions);
+  // Recompute with the SAME reference date to avoid drift
+  const { habits, completions } = load();
+  const freshHabit = habits.find(h => h.id === habit.id);
+  if (!freshHabit) {
+    // Habit was deleted — full re-render
+    render();
+    return;
+  }
+  const updated = getHabitState(freshHabit, completions, ref);
 
   updateCard(card, updated);
-  updateStats(getAllState());
+
+  // Update stats using the same reference date
+  const allState = getAllState(ref);
+  updateStats(allState);
 }
 
 function announce(message) {
