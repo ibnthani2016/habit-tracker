@@ -52,6 +52,13 @@ Major decisions taken while building and refining the habit tracker.
    - **Rationale:** Matches the spec and the existing default habit; forgiving input reduces user friction.
    - **Consequences:** Corrupted/odd deadlineDay values are silently repaired rather than rejected.
 
+4. **Collapsed the add-habit form behind a toggle button**
+   - **Context:** With the form always visible, it pushed the stats section down and cluttered the daily-use view.
+   - **Chosen:** A "+ Add Habit" button reveals the form. Submitting adds the habit and collapses the form again. Focus moves to the name input when opened and back to the toggle button when closed.
+   - **Alternatives considered:** Leaving the form permanently open; showing it inline above the habit list.
+   - **Rationale:** The primary action is checking habits, not adding them. The toggle keeps the UI clean while keeping the feature one click away.
+   - **Consequences:** `aria-expanded` and `aria-controls` are used to communicate state to screen readers.
+
 ### Open questions / follow-up
 
 - Task 7 (Weekly review view) remains the only unimplemented MVP task.

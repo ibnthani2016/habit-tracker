@@ -24,8 +24,18 @@
         </ul>
       </section>
 
+      <button
+        id="add-habit-toggle"
+        type="button"
+        class="btn btn-secondary add-habit-toggle"
+        aria-expanded="false"
+        aria-controls="add-habit-section"
+      >
+        + Add Habit
+      </button>
+
       <!-- Add Habit Form -->
-      <section id="add-habit-section" class="add-habit-section" aria-labelledby="add-habit-heading">
+      <section id="add-habit-section" class="add-habit-section" aria-labelledby="add-habit-heading" hidden>
         <h2 id="add-habit-heading" class="section-heading">Add a Habit</h2>
         <form id="add-habit-form" class="add-habit-form" novalidate>
           <div class="form-field">

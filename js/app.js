@@ -16,7 +16,10 @@ const STATS_DISPLAY_ID = 'stats-display';
 const STATUS_LIVE_ID = 'status-live';
 const EXPORT_BTN_ID = 'export-btn';
 const RESET_BTN_ID = 'reset-btn';
+const ADD_HABIT_TOGGLE_ID = 'add-habit-toggle';
+const ADD_HABIT_SECTION_ID = 'add-habit-section';
 const ADD_HABIT_FORM_ID = 'add-habit-form';
+const HABIT_NAME_INPUT_ID = 'habit-name';
 const FREQUENCY_SELECT_ID = 'habit-frequency';
 const DEADLINE_DAY_FIELD_ID = 'deadline-day-field';
 const DEADLINE_DAY_SELECT_ID = 'habit-deadline-day';
@@ -290,16 +293,39 @@ function init() {
 // ── Add Habit Form ───────────────────────────────────────
 
 function initAddHabitForm() {
+  const toggleBtn = document.getElementById(ADD_HABIT_TOGGLE_ID);
+  const section = document.getElementById(ADD_HABIT_SECTION_ID);
   const form = document.getElementById(ADD_HABIT_FORM_ID);
+  const nameInput = document.getElementById(HABIT_NAME_INPUT_ID);
   const frequencySelect = document.getElementById(FREQUENCY_SELECT_ID);
   const deadlineDayField = document.getElementById(DEADLINE_DAY_FIELD_ID);
 
-  if (!form || !frequencySelect || !deadlineDayField) return;
+  if (!toggleBtn || !section || !form || !frequencySelect || !deadlineDayField) return;
 
   function updateDeadlineDayVisibility() {
     const isWeekly = frequencySelect.value === 'weekly';
     deadlineDayField.hidden = !isWeekly;
   }
+
+  function openForm() {
+    section.hidden = false;
+    toggleBtn.setAttribute('aria-expanded', 'true');
+    nameInput?.focus();
+  }
+
+  function closeForm() {
+    section.hidden = true;
+    toggleBtn.setAttribute('aria-expanded', 'false');
+    toggleBtn.focus();
+  }
+
+  toggleBtn.addEventListener('click', () => {
+    if (section.hidden) {
+      openForm();
+    } else {
+      closeForm();
+    }
+  });
 
   frequencySelect.addEventListener('change', updateDeadlineDayVisibility);
   updateDeadlineDayVisibility();
@@ -317,7 +343,7 @@ function initAddHabitForm() {
 
     if (!name) {
       announce('Please enter a habit name.');
-      form.querySelector('#habit-name')?.focus();
+      nameInput?.focus();
       return;
     }
 
@@ -327,6 +353,7 @@ function initAddHabitForm() {
       form.reset();
       updateDeadlineDayVisibility();
       render();
+      closeForm();
     } catch (err) {
       announce(err.message || 'Failed to add habit.');
     }
