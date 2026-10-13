@@ -59,6 +59,32 @@ Major decisions taken while building and refining the habit tracker.
    - **Rationale:** The primary action is checking habits, not adding them. The toggle keeps the UI clean while keeping the feature one click away.
    - **Consequences:** `aria-expanded` and `aria-controls` are used to communicate state to screen readers.
 
+## Run: 2026-10-13 — Implement Task 7: Weekly review view
+
+### Decisions
+
+1. **Used a two-view navigation pattern (Dashboard / Weekly Review)**
+   - **Context:** The weekly review is a separate screen from the daily dashboard. A tab-like toggle keeps both views reachable without scrolling.
+   - **Chosen:** Two `<section>` elements swapped with `hidden`, plus top navigation buttons with `aria-pressed` and `aria-controls`.
+   - **Alternatives considered:** Inline accordion below the stats; separate page.
+   - **Rationale:** Tabs are the simplest accessible pattern for two distinct views in a single-page static app.
+   - **Consequences:** The weekly review re-renders each time the view is opened, so it always reflects the latest data.
+
+2. **Rolling 7-day grid for daily habits**
+   - **Context:** The spec says "past 7 days" for the review view, while streak logic uses Monday–Sunday weeks.
+   - **Chosen:** Columns are today plus the previous 6 days. Each daily habit gets a row; a cell shows ✓ if a completion exists for that day.
+   - **Alternatives considered:** Current calendar week (Mon–Sun) only.
+   - **Rationale:** A rolling window matches the wording in the spec and gives a consistent "last week" view regardless of which day the user opens it.
+   - **Consequences:** The weekly habit row uses a separate "This week" cell because it does not map to single days.
+
+3. **Weekly habit row uses a single spanning cell**
+   - **Context:** Spec acceptance criteria require "Weekly habit shown as a separate row with a single cell for this week."
+   - **Chosen:** The weekly habit name is in the first column; the second cell spans the remaining 7 day columns and shows ✓ or — for the current week.
+   - **Alternatives considered:** Showing the same checkmark in every day column of the current week.
+   - **Rationale:** Matches the acceptance criteria literally and avoids implying the weekly habit must be done every day.
+   - **Consequences:** Slightly different row shape than daily habits; handled with `colSpan`.
+
 ### Open questions / follow-up
 
-- Task 7 (Weekly review view) remains the only unimplemented MVP task.
+- MVP is now feature-complete (Tasks 1–8). A final human review of the live site is the last gate before declaring v1.2.0 done.
+- v2 idea (deferred): reminders / enforcement with service-worker notifications and explicit "missed" events.

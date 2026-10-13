@@ -223,6 +223,43 @@ body {
   opacity: 0.8;
 }
 
+/* ── View Navigation ────────────────────────────────────── */
+
+.view-nav {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.view-btn {
+  flex: 1;
+  padding: 0.625rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #f9fafb;
+  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  min-height: 44px;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.view-btn:focus-visible {
+  outline: 3px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.view-btn--active {
+  background: #1a1a2e;
+  color: #ffffff;
+  border-color: #1a1a2e;
+}
+
+.view[hidden] {
+  display: none;
+}
+
 /* ── Stats Section ───────────────────────────────────────── */
 
 .stats-section {
@@ -393,6 +430,67 @@ body {
 
 .btn-primary:hover {
   background: #2563eb;
+}
+
+/* ── Weekly Review Grid ────────────────────────────────── */
+
+.review-subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 1rem;
+}
+
+.weekly-review-grid {
+  overflow-x: auto;
+}
+
+.review-table {
+  width: 100%;
+  min-width: 600px;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.review-table th,
+.review-table td {
+  padding: 0.625rem 0.5rem;
+  text-align: center;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.review-table th {
+  font-weight: 600;
+  color: #374151;
+  background: #f9fafb;
+}
+
+.review-table th:first-child,
+.review-table td:first-child {
+  text-align: left;
+  font-weight: 500;
+  color: #1a1a2e;
+  position: sticky;
+  left: 0;
+  background: #ffffff;
+  z-index: 1;
+  min-width: 140px;
+}
+
+.review-table .day-label {
+  display: block;
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 400;
+}
+
+.review-table .check {
+  color: #10b981;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.review-table .miss {
+  color: #d1d5db;
 }
 
 /* ── Empty State ────────────────────────────────────────── */

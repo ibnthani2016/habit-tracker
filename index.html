@@ -17,72 +17,103 @@
       <!-- Status announcements for screen readers -->
       <div id="status-live" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
 
-      <section class="habits-section" aria-labelledby="habits-heading">
-        <h2 id="habits-heading" class="visually-hidden">Your Habits</h2>
-        <ul id="habit-list" class="habit-list" role="list">
-          <!-- Habits rendered here -->
-        </ul>
+      <nav class="view-nav" aria-label="Main views">
+        <button
+          id="view-dashboard-btn"
+          type="button"
+          class="view-btn view-btn--active"
+          aria-pressed="true"
+          aria-controls="dashboard-view"
+        >
+          Dashboard
+        </button>
+        <button
+          id="view-weekly-btn"
+          type="button"
+          class="view-btn"
+          aria-pressed="false"
+          aria-controls="weekly-review-view"
+        >
+          Weekly Review
+        </button>
+      </nav>
+
+      <section id="dashboard-view" class="view" aria-labelledby="view-dashboard-btn">
+        <section class="habits-section" aria-labelledby="habits-heading">
+          <h2 id="habits-heading" class="visually-hidden">Your Habits</h2>
+          <ul id="habit-list" class="habit-list" role="list">
+            <!-- Habits rendered here -->
+          </ul>
+        </section>
+
+        <button
+          id="add-habit-toggle"
+          type="button"
+          class="btn btn-secondary add-habit-toggle"
+          aria-expanded="false"
+          aria-controls="add-habit-section"
+        >
+          + Add Habit
+        </button>
+
+        <!-- Add Habit Form -->
+        <section id="add-habit-section" class="add-habit-section" aria-labelledby="add-habit-heading" hidden>
+          <h2 id="add-habit-heading" class="section-heading">Add a Habit</h2>
+          <form id="add-habit-form" class="add-habit-form" novalidate>
+            <div class="form-field">
+              <label for="habit-name">Name</label>
+              <input
+                id="habit-name"
+                type="text"
+                name="name"
+                maxlength="100"
+                required
+                placeholder="e.g., Read for 30 minutes"
+                aria-describedby="habit-name-help"
+              />
+              <span id="habit-name-help" class="field-help">Up to 100 characters</span>
+            </div>
+
+            <div class="form-field">
+              <label for="habit-frequency">Frequency</label>
+              <select id="habit-frequency" name="frequency" required>
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+              </select>
+            </div>
+
+            <div id="deadline-day-field" class="form-field" hidden>
+              <label for="habit-deadline-day">Deadline day</label>
+              <select id="habit-deadline-day" name="deadlineDay" aria-describedby="deadline-day-help">
+                <option value="0">Sunday</option>
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+              </select>
+              <span id="deadline-day-help" class="field-help">Day by which the weekly habit must be done</span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Add Habit</button>
+          </form>
+        </section>
+
+        <section class="stats-section" aria-labelledby="stats-heading">
+          <h2 id="stats-heading">Stats</h2>
+          <dl class="stats-grid" id="stats-display">
+            <!-- Stats rendered here -->
+          </dl>
+        </section>
       </section>
 
-      <button
-        id="add-habit-toggle"
-        type="button"
-        class="btn btn-secondary add-habit-toggle"
-        aria-expanded="false"
-        aria-controls="add-habit-section"
-      >
-        + Add Habit
-      </button>
-
-      <!-- Add Habit Form -->
-      <section id="add-habit-section" class="add-habit-section" aria-labelledby="add-habit-heading" hidden>
-        <h2 id="add-habit-heading" class="section-heading">Add a Habit</h2>
-        <form id="add-habit-form" class="add-habit-form" novalidate>
-          <div class="form-field">
-            <label for="habit-name">Name</label>
-            <input
-              id="habit-name"
-              type="text"
-              name="name"
-              maxlength="100"
-              required
-              placeholder="e.g., Read for 30 minutes"
-              aria-describedby="habit-name-help"
-            />
-            <span id="habit-name-help" class="field-help">Up to 100 characters</span>
-          </div>
-
-          <div class="form-field">
-            <label for="habit-frequency">Frequency</label>
-            <select id="habit-frequency" name="frequency" required>
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-            </select>
-          </div>
-
-          <div id="deadline-day-field" class="form-field" hidden>
-            <label for="habit-deadline-day">Deadline day</label>
-            <select id="habit-deadline-day" name="deadlineDay" aria-describedby="deadline-day-help">
-              <option value="0">Sunday</option>
-              <option value="1">Monday</option>
-              <option value="2">Tuesday</option>
-              <option value="3">Wednesday</option>
-              <option value="4">Thursday</option>
-              <option value="5">Friday</option>
-              <option value="6">Saturday</option>
-            </select>
-            <span id="deadline-day-help" class="field-help">Day by which the weekly habit must be done</span>
-          </div>
-
-          <button type="submit" class="btn btn-primary">Add Habit</button>
-        </form>
-      </section>
-
-      <section class="stats-section" aria-labelledby="stats-heading">
-        <h2 id="stats-heading">Stats</h2>
-        <dl class="stats-grid" id="stats-display">
-          <!-- Stats rendered here -->
-        </dl>
+      <section id="weekly-review-view" class="view" aria-labelledby="view-weekly-btn" hidden>
+        <h2 class="section-heading">Weekly Review</h2>
+        <p class="review-subtitle">Last 7 days — daily habits and this week’s weekly habit.</p>
+        <div id="weekly-review-grid" class="weekly-review-grid" role="region" aria-label="Weekly completion grid">
+          <!-- Grid rendered here -->
+        </div>
       </section>
     </main>
 

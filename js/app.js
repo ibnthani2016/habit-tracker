@@ -7,7 +7,7 @@
 
 import { load, saveHabit, saveCompletion, removeCompletion, getCompletionForPeriod, clearAll, exportData } from './storage.js';
 import { calculateStreak } from './streaks.js';
-import { startOfDay, endOfDay, startOfWeek, endOfWeek } from './utils/date.js';
+import { startOfDay, endOfDay, startOfWeek, endOfWeek, addDays, isSameDay, isSameWeek } from './utils/date.js';
 
 // ── Constants ──────────────────────────────────────────────
 
@@ -16,6 +16,11 @@ const STATS_DISPLAY_ID = 'stats-display';
 const STATUS_LIVE_ID = 'status-live';
 const EXPORT_BTN_ID = 'export-btn';
 const RESET_BTN_ID = 'reset-btn';
+const VIEW_DASHBOARD_BTN_ID = 'view-dashboard-btn';
+const VIEW_WEEKLY_BTN_ID = 'view-weekly-btn';
+const DASHBOARD_VIEW_ID = 'dashboard-view';
+const WEEKLY_REVIEW_VIEW_ID = 'weekly-review-view';
+const WEEKLY_REVIEW_GRID_ID = 'weekly-review-grid';
 const ADD_HABIT_TOGGLE_ID = 'add-habit-toggle';
 const ADD_HABIT_SECTION_ID = 'add-habit-section';
 const ADD_HABIT_FORM_ID = 'add-habit-form';
@@ -23,6 +28,8 @@ const HABIT_NAME_INPUT_ID = 'habit-name';
 const FREQUENCY_SELECT_ID = 'habit-frequency';
 const DEADLINE_DAY_FIELD_ID = 'deadline-day-field';
 const DEADLINE_DAY_SELECT_ID = 'habit-deadline-day';
+
+const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 // ── Helpers ────────────────────────────────────────────────
 
@@ -283,11 +290,136 @@ function handleReset() {
 
 function init() {
   render();
+  renderWeeklyReview();
 
   document.getElementById(EXPORT_BTN_ID)?.addEventListener('click', handleExport);
   document.getElementById(RESET_BTN_ID)?.addEventListener('click', handleReset);
 
+  initViewSwitching();
   initAddHabitForm();
+}
+
+// ── View Switching ───────────────────────────────────────
+
+function initViewSwitching() {
+  const dashboardBtn = document.getElementById(VIEW_DASHBOARD_BTN_ID);
+  const weeklyBtn = document.getElementById(VIEW_WEEKLY_BTN_ID);
+  const dashboardView = document.getElementById(DASHBOARD_VIEW_ID);
+  const weeklyView = document.getElementById(WEEKLY_REVIEW_VIEW_ID);
+
+  if (!dashboardBtn || !weeklyBtn || !dashboardView || !weeklyView) return;
+
+  function showDashboard() {
+    dashboardView.hidden = false;
+    weeklyView.hidden = true;
+    dashboardBtn.classList.add('view-btn--active');
+    dashboardBtn.setAttribute('aria-pressed', 'true');
+    weeklyBtn.classList.remove('view-btn--active');
+    weeklyBtn.setAttribute('aria-pressed', 'false');
+    announce('Dashboard view');
+  }
+
+  function showWeekly() {
+    dashboardView.hidden = true;
+    weeklyView.hidden = false;
+    dashboardBtn.classList.remove('view-btn--active');
+    dashboardBtn.setAttribute('aria-pressed', 'false');
+    weeklyBtn.classList.add('view-btn--active');
+    weeklyBtn.setAttribute('aria-pressed', 'true');
+    renderWeeklyReview();
+    announce('Weekly review view');
+  }
+
+  dashboardBtn.addEventListener('click', showDashboard);
+  weeklyBtn.addEventListener('click', showWeekly);
+}
+
+// ── Weekly Review ────────────────────────────────────────
+
+function renderWeeklyReview() {
+  const grid = document.getElementById(WEEKLY_REVIEW_GRID_ID);
+  if (!grid) return;
+
+  const ref = new Date();
+  const { habits, completions } = load();
+  const dailyHabits = habits.filter(h => h.frequency === 'daily');
+  const weeklyHabits = habits.filter(h => h.frequency === 'weekly');
+
+  const days = Array.from({ length: 7 }, (_, i) => addDays(ref, -6 + i));
+
+  const table = document.createElement('table');
+  table.className = 'review-table';
+
+  // Header row
+  const thead = document.createElement('thead');
+  const headerRow = document.createElement('tr');
+  headerRow.appendChild(document.createElement('th')); // habit name column
+  days.forEach(day => {
+    const th = document.createElement('th');
+    th.innerHTML = `<span>${DAY_NAMES[day.getDay()]}</span><span class="day-label">${day.getDate()}</span>`;
+    headerRow.appendChild(th);
+  });
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
+
+  // Daily habit rows
+  const tbody = document.createElement('tbody');
+  dailyHabits.forEach(habit => {
+    const row = document.createElement('tr');
+    const nameCell = document.createElement('td');
+    nameCell.textContent = habit.name;
+    row.appendChild(nameCell);
+
+    days.forEach(day => {
+      const cell = document.createElement('td');
+      const completed = completions.some(c =>
+        c.habitId === habit.id && isSameDay(c.periodStart, day)
+      );
+      cell.innerHTML = completed
+        ? '<span class="check" aria-label="Done">✓</span>'
+        : '<span class="miss" aria-hidden="true">—</span>';
+      cell.setAttribute('aria-label', `${habit.name} on ${day.toLocaleDateString()}: ${completed ? 'done' : 'not done'}`);
+      row.appendChild(cell);
+    });
+
+    tbody.appendChild(row);
+  });
+
+  // Weekly habit rows
+  weeklyHabits.forEach(habit => {
+    const row = document.createElement('tr');
+    const nameCell = document.createElement('td');
+    nameCell.textContent = habit.name;
+    row.appendChild(nameCell);
+
+    const completed = completions.some(c =>
+      c.habitId === habit.id && isSameWeek(c.periodStart, ref)
+    );
+
+    const cell = document.createElement('td');
+    cell.colSpan = 7;
+    cell.innerHTML = completed
+      ? '<span class="check" aria-label="Done">✓</span> This week'
+      : '<span class="miss" aria-hidden="true">—</span> This week';
+    cell.setAttribute('aria-label', `${habit.name} this week: ${completed ? 'done' : 'not done'}`);
+    row.appendChild(cell);
+
+    tbody.appendChild(row);
+  });
+
+  if (dailyHabits.length === 0 && weeklyHabits.length === 0) {
+    const row = document.createElement('tr');
+    const cell = document.createElement('td');
+    cell.colSpan = 8;
+    cell.textContent = 'No habits to review.';
+    cell.className = 'empty-state';
+    row.appendChild(cell);
+    tbody.appendChild(row);
+  }
+
+  table.appendChild(tbody);
+  grid.innerHTML = '';
+  grid.appendChild(table);
 }
 
 // ── Add Habit Form ───────────────────────────────────────

@@ -76,7 +76,7 @@ Static-site habit tracker. Vanilla HTML/CSS/JS. No build step. No server. No dat
 
 | # | Item | Status |
 |---|------|--------|
-| 1 | Weekly review view (Task 7) | Not implemented — **not a blocker** (MVP works without it) |
+| 1 | Weekly review view (Task 7) | ✅ Implemented with 7-day rolling grid |
 | 2 | Add habit form (Task 3) | ✅ Implemented with deadline-day support |
 | 3 | Error reporting service | Not configured — **acceptable for v1** (static site, no PII) |
 

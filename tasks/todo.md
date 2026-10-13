@@ -31,7 +31,7 @@
 - [x] All acceptance criteria from Tasks 1–6 pass
 
 ## Phase 4: Review + Polish
-- [ ] Task 7: Weekly review view
+- [x] Task 7: Weekly review view
 - [x] Task 8: Data export, reset (settings UI stretch)
 
 ## Shipping + Launch ✅
@@ -47,11 +47,11 @@
 - [x] Security hardening: localStorage validation (shape checks, bounds, sanitization)
 - [x] Date drift fix: single referenceDate through call chain
 - [x] Redundant load() calls eliminated
-- [x] 34 tests passing (25 original + 9 security)
+- [x] 37 tests passing (25 original + 9 security + 3 add-habit)
 - [x] Browser verification passed after hardening
 
 ## Checkpoint: Complete
-- [ ] All 8 tasks acceptance criteria met
+- [x] All 8 tasks acceptance criteria met
 - [ ] End-to-end flow: add habit → mark complete → streak updates → weekly review shows it → export data → reset data
 - [ ] No console errors
 - [ ] Review with human before declaring done
