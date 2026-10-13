@@ -16,8 +16,10 @@ const STATS_DISPLAY_ID = 'stats-display';
 const STATUS_LIVE_ID = 'status-live';
 const EXPORT_BTN_ID = 'export-btn';
 const RESET_BTN_ID = 'reset-btn';
-const ADD_HABIT_SECTION_ID = 'add-habit-section';
 const ADD_HABIT_FORM_ID = 'add-habit-form';
+const FREQUENCY_SELECT_ID = 'habit-frequency';
+const DEADLINE_DAY_FIELD_ID = 'deadline-day-field';
+const DEADLINE_DAY_SELECT_ID = 'habit-deadline-day';
 
 // ── Helpers ────────────────────────────────────────────────
 
@@ -285,20 +287,22 @@ function init() {
   initAddHabitForm();
 }
 
-// ── Feature Flag: Add Habit ──────────────────────────────
+// ── Add Habit Form ───────────────────────────────────────
 
-async function initAddHabitForm() {
-  const { isFeatureEnabled } = await import('./features.js');
+function initAddHabitForm() {
+  const form = document.getElementById(ADD_HABIT_FORM_ID);
+  const frequencySelect = document.getElementById(FREQUENCY_SELECT_ID);
+  const deadlineDayField = document.getElementById(DEADLINE_DAY_FIELD_ID);
 
-  if (!isFeatureEnabled('ENABLE_ADD_HABIT')) {
-    return; // Feature disabled — form stays hidden
+  if (!form || !frequencySelect || !deadlineDayField) return;
+
+  function updateDeadlineDayVisibility() {
+    const isWeekly = frequencySelect.value === 'weekly';
+    deadlineDayField.hidden = !isWeekly;
   }
 
-  const section = document.getElementById(ADD_HABIT_SECTION_ID);
-  const form = document.getElementById(ADD_HABIT_FORM_ID);
-  if (!section || !form) return;
-
-  section.hidden = false;
+  frequencySelect.addEventListener('change', updateDeadlineDayVisibility);
+  updateDeadlineDayVisibility();
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -306,6 +310,10 @@ async function initAddHabitForm() {
     const formData = new FormData(form);
     const name = String(formData.get('name') || '').trim();
     const frequency = String(formData.get('frequency') || 'daily');
+    const deadlineDayValue = formData.get('deadlineDay');
+    const deadlineDay = frequency === 'weekly'
+      ? Number(deadlineDayValue)
+      : null;
 
     if (!name) {
       announce('Please enter a habit name.');
@@ -314,9 +322,10 @@ async function initAddHabitForm() {
     }
 
     try {
-      saveHabit({ name, frequency, deadlineDay: null });
+      saveHabit({ name, frequency, deadlineDay });
       announce(`Habit "${name}" added.`);
       form.reset();
+      updateDeadlineDayVisibility();
       render();
     } catch (err) {
       announce(err.message || 'Failed to add habit.');

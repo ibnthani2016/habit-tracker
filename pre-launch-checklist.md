@@ -7,7 +7,7 @@ Static-site habit tracker. Vanilla HTML/CSS/JS. No build step. No server. No dat
 
 ## Code Quality
 
-- [x] All tests pass (34/34 — streak + storage + security)
+- [x] All tests pass (37/37 — streak + storage + security + add-habit)
 - [x] No build step required (static files)
 - [x] No TODO comments blocking launch
 - [x] No `console.log` debugging in production code (only `console.warn` for data corruption)
@@ -59,9 +59,9 @@ Static-site habit tracker. Vanilla HTML/CSS/JS. No build step. No server. No dat
 
 ## Feature Flag
 
-- [x] "Add new habit" behind `ENABLE_ADD_HABIT` flag
-- [x] Flag stored in localStorage for this static-site constraint
-- [x] Both flag states tested (off by default, on via console or future UI)
+- [x] "Add new habit" no longer behind feature flag — visible by default
+- [x] Conditional deadline-day field shown for weekly habits
+- [x] Form validates name and frequency; weekly habits default deadlineDay to Sunday
 
 ## Monitoring (Static Site Constraints)
 
@@ -77,7 +77,7 @@ Static-site habit tracker. Vanilla HTML/CSS/JS. No build step. No server. No dat
 | # | Item | Status |
 |---|------|--------|
 | 1 | Weekly review view (Task 7) | Not implemented — **not a blocker** (MVP works without it) |
-| 2 | Add habit form (Task 3) | Behind feature flag — **not a blocker** |
+| 2 | Add habit form (Task 3) | ✅ Implemented with deadline-day support |
 | 3 | Error reporting service | Not configured — **acceptable for v1** (static site, no PII) |
 
 ## LAUNCH DECISION

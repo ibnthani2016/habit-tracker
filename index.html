@@ -24,8 +24,8 @@
         </ul>
       </section>
 
-      <!-- Add Habit Form — hidden unless feature flag enabled -->
-      <section id="add-habit-section" class="add-habit-section" aria-labelledby="add-habit-heading" hidden>
+      <!-- Add Habit Form -->
+      <section id="add-habit-section" class="add-habit-section" aria-labelledby="add-habit-heading">
         <h2 id="add-habit-heading" class="section-heading">Add a Habit</h2>
         <form id="add-habit-form" class="add-habit-form" novalidate>
           <div class="form-field">
@@ -48,6 +48,20 @@
               <option value="daily">Daily</option>
               <option value="weekly">Weekly</option>
             </select>
+          </div>
+
+          <div id="deadline-day-field" class="form-field" hidden>
+            <label for="habit-deadline-day">Deadline day</label>
+            <select id="habit-deadline-day" name="deadlineDay" aria-describedby="deadline-day-help">
+              <option value="0">Sunday</option>
+              <option value="1">Monday</option>
+              <option value="2">Tuesday</option>
+              <option value="3">Wednesday</option>
+              <option value="4">Thursday</option>
+              <option value="5">Friday</option>
+              <option value="6">Saturday</option>
+            </select>
+            <span id="deadline-day-help" class="field-help">Day by which the weekly habit must be done</span>
           </div>
 
           <button type="submit" class="btn btn-primary">Add Habit</button>

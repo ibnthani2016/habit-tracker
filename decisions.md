@@ -27,6 +27,31 @@ Major decisions taken while building and refining the habit tracker.
    - **Rationale:** Prevents crashes from malformed data while preserving user data when possible.
    - **Consequences:** Adds a small validation layer; corrupt-but-recoverable data is repaired instead of deleted.
 
+## Run: 2026-10-13 — Implement Task 3: Add a habit
+
+### Decisions
+
+1. **Removed the `ENABLE_ADD_HABIT` feature flag gating**
+   - **Context:** Task 3 acceptance criteria require the add-habit form to be part of the core MVP experience, not opt-in via console flag.
+   - **Chosen:** The form is now visible and functional by default. The `features.js` module remains in the repo for future flags but is no longer used for this feature.
+   - **Alternatives considered:** Keeping the flag and enabling it by default in code; removing `features.js` entirely.
+   - **Rationale:** A visible add-habit form is required for the end-to-end MVP flow. Keeping `features.js` avoids breaking any future flag-based experiments.
+   - **Consequences:** Users can add habits immediately on first load.
+
+2. **Added conditional deadline-day field for weekly habits**
+   - **Context:** The spec requires `deadlineDay` for weekly habits (0–6, Sunday–Saturday) and `null` for daily habits.
+   - **Chosen:** The form shows a "Deadline day" select only when frequency is "weekly". Daily habits implicitly store `deadlineDay: null`.
+   - **Alternatives considered:** Always showing the field and defaulting to Sunday; using a text input instead of a select.
+   - **Rationale:** Conditional display keeps the daily-habit form minimal while still honoring the data model.
+   - **Consequences:** The UI must reset and re-evaluate field visibility on form submission.
+
+3. **Default weekly `deadlineDay` to 0 (Sunday) and clamp out-of-range values**
+   - **Context:** Storage validation rejects `deadlineDay` outside 0–6, and the existing default weekly habit uses Sunday.
+   - **Chosen:** `saveHabit` defaults weekly habits to `0` and clamps invalid inputs to `[0, 6]` before validation. `sanitizeHabit` forces `null` for daily habits.
+   - **Alternatives considered:** Throwing on invalid deadlineDay; leaving it as `null` for weekly habits.
+   - **Rationale:** Matches the spec and the existing default habit; forgiving input reduces user friction.
+   - **Consequences:** Corrupted/odd deadlineDay values are silently repaired rather than rejected.
+
 ### Open questions / follow-up
 
-- Evaluate whether Task 3 (Add a habit) and Task 7 (Weekly review) should be implemented before the next refactor pass.
+- Task 7 (Weekly review view) remains the only unimplemented MVP task.

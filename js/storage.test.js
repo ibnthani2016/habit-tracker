@@ -92,6 +92,38 @@ describe('saveHabit', () => {
     assert.strictEqual(habit.id, 'custom-id');
     assert.strictEqual(habit.createdAt, '2025-06-01');
   });
+
+  it('saves weekly habits with deadlineDay', () => {
+    load();
+
+    const habit = saveHabit({ name: 'Weekly review', frequency: 'weekly', deadlineDay: 5 });
+
+    assert.strictEqual(habit.frequency, 'weekly');
+    assert.strictEqual(habit.deadlineDay, 5);
+
+    const data = load();
+    const saved = data.habits.find(h => h.name === 'Weekly review');
+    assert.ok(saved);
+    assert.strictEqual(saved.deadlineDay, 5);
+  });
+
+  it('defaults deadlineDay to 0 for weekly habits when not provided', () => {
+    load();
+
+    const habit = saveHabit({ name: 'Weekly review', frequency: 'weekly' });
+
+    assert.strictEqual(habit.deadlineDay, 0);
+  });
+
+  it('clamps invalid deadlineDay values', () => {
+    load();
+
+    const tooHigh = saveHabit({ name: 'High', frequency: 'weekly', deadlineDay: 99 });
+    assert.strictEqual(tooHigh.deadlineDay, 6);
+
+    const tooLow = saveHabit({ name: 'Low', frequency: 'weekly', deadlineDay: -3 });
+    assert.strictEqual(tooLow.deadlineDay, 0);
+  });
 });
 
 // ── saveCompletion() ─────────────────────────────────────

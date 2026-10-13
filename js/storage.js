@@ -51,11 +51,16 @@ function isValidCompletion(c) {
 }
 
 function sanitizeHabit(h) {
+  const frequency = h.frequency === 'weekly' ? 'weekly' : 'daily';
   return {
     id: String(h.id || generateId()),
     name: stripControlChars(String(h.name).slice(0, MAX_NAME_LENGTH)),
-    frequency: h.frequency === 'weekly' ? 'weekly' : 'daily',
-    deadlineDay: h.deadlineDay === null ? null : Math.max(0, Math.min(6, Number(h.deadlineDay) || 0)),
+    frequency,
+    deadlineDay: frequency === 'daily'
+      ? null
+      : (h.deadlineDay === null || h.deadlineDay === undefined
+          ? 0
+          : Math.max(0, Math.min(6, Number(h.deadlineDay) || 0))),
     createdAt: typeof h.createdAt === 'string' ? h.createdAt : new Date().toISOString(),
   };
 }
@@ -171,9 +176,14 @@ export function saveHabit(habit) {
     id: habit.id || generateId(),
     name: stripControlChars(String(habit.name).slice(0, MAX_NAME_LENGTH)),
     frequency: habit.frequency,
-    deadlineDay: habit.deadlineDay ?? null,
+    deadlineDay: habit.deadlineDay ?? (habit.frequency === 'weekly' ? 0 : null),
     createdAt: habit.createdAt || new Date().toISOString(),
   };
+
+  // Clamp weekly deadlineDay before validation
+  if (candidate.frequency === 'weekly' && candidate.deadlineDay !== null) {
+    candidate.deadlineDay = Math.max(0, Math.min(6, Number(candidate.deadlineDay) || 0));
+  }
 
   if (!isValidHabit(candidate)) {
     throw new Error(`Invalid habit: name must be 1-${MAX_NAME_LENGTH} chars, frequency must be daily or weekly`);

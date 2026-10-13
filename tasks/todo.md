@@ -11,7 +11,7 @@
 - [x] Clear function works
 
 ## Phase 2: Core CRUD
-- [ ] Task 3: Add a habit
+- [x] Task 3: Add a habit
 - [x] Task 4: Mark a day/week done (complete/uncomplete)
 
 ## Checkpoint: Core CRUD ✅
